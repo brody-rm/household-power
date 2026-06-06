@@ -6,6 +6,8 @@ statsmodels
 pmdarima
 prophet
 scikit-learn
-tensorflow
+xgboost
+shap
+chronos-forecasting
+torch
 jupyter
-requests
