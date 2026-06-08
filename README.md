@@ -1,6 +1,6 @@
 # Time Series Forecasting with a Foundation Model
 
-A structured time series forecasting project benchmarking five models — beginning with classical statistical models, then moving to modern machine learning implementations, then finishing with a zero-shot foundation model. Forecasts are evaluated against daily household electricity consumption from the UC Irvine Individual Household Electric Power Consumption dataset. This project is designed to evaluate whether or not time series foundation models compete with established forecasting techniques.
+A structured time series forecasting project benchmarking five models — beginning with classical statistical models, then moving to modern machine learning implementations, and finishing with a zero-shot foundation model. Forecasts are evaluated against daily household electricity consumption from the UC Irvine Individual Household Electric Power Consumption dataset. This project is designed to evaluate whether or not time series foundation models compete with established forecasting techniques.
 
 ---
 
