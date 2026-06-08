@@ -24,6 +24,14 @@ Residential electricity consumption follows complex, multi-scale patterns driven
 
 ---
 
+## References
+
+This project was inspired by the following survey, which motivated testing a zero-shot foundation model alongside classical and ML baselines as a structured comparison:
+
+Kottapalli, S. R. K., Hubli, K., Chandrashekhara, S., Jain, G., Hubli, S., Botla, G., & Doddaiah, R. (2025). *Foundation Models for Time Series: A Survey*. arXiv preprint arXiv:2504.04011. https://arxiv.org/abs/2504.04011
+
+---
+
 ## Methods
 
 All models share the same evaluation protocol: 12 non-overlapping 30-day walk-forward folds over the held-out test year, with an expanding training window that prevents any look-ahead bias. At each fold boundary, models receive all observed history up to that point before forecasting the next 30 days. All models use actual observed test-set values as inputs at fold boundaries rather than recursively feeding their own predictions — this is appropriate for retrospective benchmarking but means real-world performance would be modestly worse, particularly for models whose inputs depend on recent actuals.
@@ -44,19 +52,24 @@ All models share the same evaluation protocol: 12 non-overlapping 30-day walk-fo
 
 **XGBoost** requires explicit temporal structure since tree models have no native concept of time order. The feature matrix includes lag features at 1, 7, 14, and 30 days; 7- and 30-day rolling means and 7-day rolling standard deviation; calendar features (day of week, month, day of year, is_weekend); and lag-1 and lag-7 readings from three sub-meters (kitchen, laundry, heating). All features use `.shift(1)` to prevent the current observation from leaking into its own features. Calendar features are integer-encoded — appropriate for tree models that split on thresholds rather than treating feature values as magnitudes. The model is fitted once on the training window with early stopping against a held-out validation set, then evaluated in batch mode across the full test period using actual observed lag values.
 
-SHAP values are computed to provide directional feature attribution across the training set. `lag_1` and `rolling_mean_7` dominate, confirming that recent consumption history is the strongest predictor of next-day usage.
-
 ![Modern ML Forecasts](outputs/modern_ml_forecasts.png)
-
-![SHAP Feature Importances](outputs/figures/xgboost_shap_importance.png)
 
 ---
 
 ### Foundation Model
 
-**Chronos-Bolt-Base** is applied entirely zero-shot — no fitting, no feature engineering, no hyperparameter tuning on this dataset. It is a transformer pretrained on approximately 600,000 real-world and synthetic time series, treating forecasting as a language modeling task over quantized value tokens. The full 1,081-day training history is passed as context at each fold, well within the model's 2,048-step context window. Unlike every other model in this project, Chronos outputs a probability distribution: 9 quantiles per time step. Point forecasts use the median (q=0.5); 80% prediction intervals use q=0.1 and q=0.9, with empirical coverage verified against the 80% target.
+Foundation models are defined by their ability to act as a universal tool for downstream tasks. Pretrained foundation models are designed to be applied to a wide variety of forecasting tasks, without themselves being explicitly tied to a given task. They are trained on a vast array of datasets with the objective of understanding structure common to time series data across several domains. Instead of fitting the model to a set of training data, a context window is passed to the model, much like a prompt to an LLM.
+
+Foundation models can suffer from poor predictions if the application requires a large context window. For this project, the context window is large enough that the entirety of the training set can be passed in, allowing seasonality to be built into the context window provided. Performance can also suffer on highly noisy and short horizon data.
+
+
+**Chronos-Bolt-Base (205M)** is applied entirely zero-shot — no fitting, no feature engineering, no hyperparameter tuning on this dataset. It is a transformer pretrained on approximately 600,000 real-world and synthetic time series, treating forecasting as a language modeling task over quantized value tokens. The full 1,081-day training history is passed as context at each fold, well within the model's 2,048-step context window. Unlike every other model in this project, Chronos outputs a probability distribution. Point forecasts use the median (q=0.5); 80% prediction intervals use q=0.1 and q=0.9, with empirical coverage verified against the 80% target. Chronos-Bolt models are a patch-based variant of the Chronos family of models, with significant memory and speed advantages. More info on the Chronos-Bolt models can be found [here](https://huggingface.co/amazon/chronos-bolt-base).
 
 ![Foundation Model Forecast](outputs/foundation_model_forecast.png)
+
+**Prediction intervals:** Unlike point forecasts, Chronos outputs a full predictive distribution at each time step. The 80% prediction interval (PI) is constructed from the q=0.1 and q=0.9 quantiles, meaning the model expects roughly 8 out of 10 actual observations to fall within the shaded band. Empirical coverage is computed per fold and compared against the 80% target — undercoverage indicates the intervals are too narrow (overconfident), while overcoverage indicates they are too wide (underconfident).
+
+![PI Coverage by Fold](outputs/figures/chronos_pi_coverage.png)
 
 ---
 
