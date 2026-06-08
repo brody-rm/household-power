@@ -109,23 +109,30 @@ Individual notebooks can also be opened and run interactively with `jupyter note
 
 ```
 household-power-usage/
-├── data/                        # Raw and processed CSVs
+├── data/
+│   ├── household_power_consumption.csv  # Raw UCI dataset
+│   ├── daily_train.csv                  # Aggregated daily train split
+│   └── daily_test.csv                   # Aggregated daily test split
 ├── notebooks/
-│   ├── 01_eda.ipynb             # EDA, preprocessing, train/test split
-│   ├── 02_classical_baselines.ipynb   # ETS and SARIMA
-│   ├── 03_modern_ml.ipynb       # Prophet and XGBoost
-│   └── 04_foundation_model.ipynb      # Chronos-Bolt-Base
+│   ├── 01_eda.ipynb                     # EDA, preprocessing, train/test split
+│   ├── 02_classical_baselines.ipynb     # ETS and SARIMA
+│   ├── 03_modern_ml.ipynb               # Prophet and XGBoost
+│   └── 04_foundation_model.ipynb        # Chronos-Bolt-Base and comparison
 ├── outputs/
-│   ├── comparison.png           # Model leaderboard (visual)
-│   ├── leaderboard.csv          # Consolidated model metrics
+│   ├── comparison.png                   # Model comparison chart
+│   ├── leaderboard.csv                  # Consolidated model metrics
+│   ├── classical_metrics.csv
+│   ├── modern_ml_metrics.csv
+│   ├── foundation_model_metrics.csv
 │   ├── classical_forecasts.png
 │   ├── modern_ml_forecasts.png
 │   ├── foundation_model_forecast.png
 │   └── figures/
+│       ├── chronos_pi_coverage.png      
 │       ├── xgboost_shap_importance.png
 │       ├── prophet_cv_rmse.png
 │       └── prophet_components.png
-├── .python-version              # Python 3.11
+├── .python-version                      # Python 3.11
 ├── requirements.txt
-└── run_pipeline.py              # Executes all notebooks end-to-end
+└── run_pipeline.py                      # Executes all notebooks end-to-end
 ```
